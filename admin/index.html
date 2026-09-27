@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Casa Matcha · Owner Console</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">CASA MATCHA · OWNER CONSOLE</p>
+        <h1>Good drinks.<br>Clear controls.</h1>
+        <p>Post an event, change the seasonal feature, or send the right update to the right familia.</p>
+      </div>
+      <div class="spark">✦</div>
+    </header>
+
+    <section class="auth card">
+      <label>Admin password<input id="password" type="password" autocomplete="current-password" placeholder="Owner password"></label>
+      <p class="hint">The password is checked by the Supabase Edge Function and is never stored by this page.</p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <p class="eyebrow">EVENT</p>
+        <h2>Post an event</h2>
+        <label>Title<input id="eventTitle" value="Matcha, Café y Perreo"></label>
+        <label>Date / time<input id="eventDate" type="datetime-local"></label>
+        <label>Location<select id="eventLocation"><option value="friendswood">Friendswood</option><option value="webster">Webster</option></select></label>
+        <label>Ticket URL<input id="eventUrl" type="url" placeholder="https://..."></label>
+        <button data-action="event">Publish event →</button>
+      </section>
+
+      <section class="card">
+        <p class="eyebrow">SEASONAL DROP</p>
+        <h2>Update the feature</h2>
+        <label>Title<input id="seasonTitle" value="Pumpkin Drop"></label>
+        <label>Caption<input id="seasonCaption" value="Real flavors. Same good energy."></label>
+        <label>Image URL<input id="seasonImage" type="url" placeholder="https://..."></label>
+        <button data-action="seasonal">Update feature →</button>
+      </section>
+
+      <section class="card push-card">
+        <p class="eyebrow">PUSH</p>
+        <h2>Send an update</h2>
+        <label>Title<input id="pushTitle" placeholder="Pumpkin Drop just landed ✦"></label>
+        <label>Message<textarea id="pushBody" rows="3" placeholder="Tell the familia what's happening."></textarea></label>
+        <label>Deep link<input id="pushRoute" placeholder="/menu?category=Seasonal"></label>
+        <div class="row">
+          <label>Audience<select id="pushScope"><option value="all">All subscribers</option><option value="location">One location</option><option value="topic">One topic</option></select></label>
+          <label>Target<select id="pushTarget"><option value="">—</option><option value="friendswood">Friendswood</option><option value="webster">Webster</option><option value="events">Events</option><option value="seasonal">Seasonal drops</option><option value="rewards">Rewards</option></select></label>
+        </div>
+        <label>Schedule (optional)<input id="pushSchedule" type="datetime-local"></label>
+        <button data-action="push">Send / schedule →</button>
+      </section>
+    </div>
+    <output id="status" aria-live="polite"></output>
+  </main>
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
