@@ -30,8 +30,7 @@ export default function AboutScreen() {
       <View style={styles.hero}>
         <AstronautBadge size={112} />
         <Sparkle size={18} />
-        <Text allowFontScaling style={styles.title}>Same planet.{"
-"}Better drinks.</Text>
+        <Text allowFontScaling style={styles.title}>Same planet.{"\n"}Better drinks.</Text>
         <Text allowFontScaling style={styles.body}>A native Casa Matcha app concept built around ordering, rewards, seasonal drops, events, and the two Casa communities.</Text>
       </View>
 
