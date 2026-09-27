@@ -91,10 +91,8 @@ export default function HomeScreen() {
 
           <Text allowFontScaling style={styles.heroTitle}>
             Real matcha.
-            {"
-"}Real coffee.
-            {"
-"}Real <Text style={styles.heroTitleAccent}>familia.</Text>
+            {"\n"}Real coffee.
+            {"\n"}Real <Text style={styles.heroTitleAccent}>familia.</Text>
           </Text>
 
           <Text allowFontScaling style={styles.heroBody}>
@@ -152,8 +150,7 @@ export default function HomeScreen() {
           <Text allowFontScaling style={styles.manifestoEyebrow}>THE CASA WAY</Text>
           <Text allowFontScaling style={styles.manifestoTitle}>
             Not just a coffee run.
-            {"
-"}A place to <Text style={styles.manifestoItalic}>land.</Text>
+            {"\n"}A place to <Text style={styles.manifestoItalic}>land.</Text>
           </Text>
         </View>
         <Text allowFontScaling style={styles.manifestoSide}>TWO CASAS · ONE FAMILIA</Text>
@@ -218,8 +215,7 @@ export default function HomeScreen() {
             <Text allowFontScaling style={styles.eventTicketTitle}>{event.title}</Text>
             <Text allowFontScaling style={styles.eventTicketMeta}>
               {event.dateLabel}
-              {"
-"}Casa Matcha {event.locationId === "webster" ? "Webster" : "Friendswood"}
+              {"\n"}Casa Matcha {event.locationId === "webster" ? "Webster" : "Friendswood"}
             </Text>
             <View style={styles.ticketRule} />
             <View style={styles.ticketBottom}>
@@ -234,8 +230,7 @@ export default function HomeScreen() {
         <Text allowFontScaling style={styles.closingTop}>MATCHA FOR THE PEOPLE</Text>
         <Text allowFontScaling style={styles.closingTitle}>
           Come for the drink.
-          {"
-"}Stay for the <Text style={styles.closingAccent}>energy.</Text>
+          {"\n"}Stay for the <Text style={styles.closingAccent}>energy.</Text>
         </Text>
         <View style={styles.closingMeta}>
           <Text allowFontScaling style={styles.closingMetaText}>FRIENDSWOOD</Text>
