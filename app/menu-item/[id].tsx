@@ -31,7 +31,7 @@ export default function MenuItemModal() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          <Image source={{ uri: item.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel={item.name} />
+          <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} contentFit="cover" accessibilityLabel={item.name} />
           <Pressable accessibilityRole="button" accessibilityLabel="Close item details" onPress={() => router.back()} style={styles.close}>
             <MaterialCommunityIcons name="close" size={24} color={colors.forest} />
           </Pressable>
