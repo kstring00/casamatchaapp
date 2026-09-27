@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -18,6 +19,11 @@ const heroImage = "https://casa-matcha.vercel.app/hero/still-splash.png"; // VER
 const secondaryImage = "https://casa-matcha.vercel.app/menu/strawberry-matcha.jpg"; // VERIFY
 
 export default function HomeScreen() {
+  const heroPlayer = useVideoPlayer(require("../../assets/casa-matcha-hero.mp4"), (player) => {
+    player.loop = true;
+    player.muted = true;
+    player.play();
+  });
   const { locationId } = useAppState();
   const seasonalState = useAsync(getSeasonalFeature, []);
   const eventState = useAsync(getFeaturedEvent, []);
@@ -59,6 +65,14 @@ export default function HomeScreen() {
           contentPosition="center"
           transition={220}
           accessibilityLabel="Iced matcha splashing above a Casa Matcha cup"
+        />
+        <VideoView
+          player={heroPlayer}
+          style={StyleSheet.absoluteFill}
+          contentFit="cover"
+          nativeControls={false}
+          allowsPictureInPicture={false}
+          accessibilityLabel="Casa Matcha pour and splash animation"
         />
         <LinearGradient
           colors={[

@@ -28,7 +28,8 @@
     "react-native": "0.86.3",
     "react-native-maps": "1.27.2",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0"
+    "react-native-screens": "~4.26.0",
+    "expo-video": "~57.0.5"
   },
   "devDependencies": {
     "@types/node": "^24.10.0",
