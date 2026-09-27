@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import * as WebBrowser from "expo-web-browser";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { AppScreen } from "@/components/AppScreen";
-import { AstronautBadge, Sparkle } from "@/components/Brand";
+import { AstronautBadge } from "@/components/Brand";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import { menuItems } from "@/data/mock";
 import { commerceProvider } from "@/providers";
@@ -12,17 +12,21 @@ import { useAppState } from "@/state/AppState";
 import { colors, fonts, radius, shadow, spacing, type } from "@/theme";
 import { useAsync } from "@/lib/useAsync";
 
-const providerName = ((Constants.expoConfig?.extra ?? {}) as { commerceProvider?: string }).commerceProvider ?? "mock";
+const providerName =
+  ((Constants.expoConfig?.extra ?? {}) as { commerceProvider?: string }).commerceProvider ?? "mock";
 
 export default function RewardsScreen() {
   const { locationId, cart, addToCart, updateQuantity } = useAppState();
-  const { data, loading, error, retry } = useAsync(() => commerceProvider.getRewards("demo-user"), [locationId]);
+  const { data, loading, error, retry } = useAsync(
+    () => commerceProvider.getRewards("demo-user"),
+    [locationId]
+  );
 
   const subtotal = cart.reduce((sum, line) => {
     const item = menuItems.find((candidate) => candidate.id === line.itemId);
     return sum + (item?.price ?? 0) * line.quantity;
   }, 0);
-  // Mock mode only. Real checkout/tax calculation belongs to Toast in Phase 3.
+
   const tax = providerName === "mock" ? subtotal * 0.0825 : 0;
   const total = subtotal + tax;
 
@@ -34,8 +38,21 @@ export default function RewardsScreen() {
     });
   };
 
-  if (loading) return <AppScreen><LoadingState label="Loading rewards…" /></AppScreen>;
-  if (error || !data) return <AppScreen><ErrorState message={error?.message ?? "Rewards are unavailable."} retry={retry} /></AppScreen>;
+  if (loading) {
+    return (
+      <AppScreen>
+        <LoadingState label="Loading rewards…" />
+      </AppScreen>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <AppScreen>
+        <ErrorState message={error?.message ?? "Rewards are unavailable."} retry={retry} />
+      </AppScreen>
+    );
+  }
 
   const remaining = Math.max(0, data.freeDrinkAt - data.points);
   const progress = Math.min(1, data.points / Math.max(1, data.freeDrinkAt));
@@ -43,102 +60,218 @@ export default function RewardsScreen() {
   return (
     <AppScreen>
       <View style={styles.header}>
-        <Text allowFontScaling style={styles.title}>Rewards</Text>
-        <Text allowFontScaling style={styles.kicker}>GOOD DRINKS · BRIGHTER PEOPLE</Text>
+        <View style={styles.headerMeta}>
+          <Text allowFontScaling style={styles.edition}>CASA CLUB · MEMBER PASS</Text>
+          <Text allowFontScaling style={styles.edition}>
+            {locationId === "friendswood" ? "FRIENDSWOOD" : "WEBSTER"}
+          </Text>
+        </View>
+        <Text allowFontScaling style={styles.title}>Rewards,{"
+"}but make it <Text style={styles.titleItalic}>familia.</Text></Text>
       </View>
 
-      <View style={styles.pointsCard}>
-        <View style={styles.pointsCopy}>
-          <Text allowFontScaling style={styles.pointsEyebrow}>GOOD DRINKS{"\n"}BRIGHTER PEOPLE</Text>
-          <Text allowFontScaling style={styles.points}>{data.points} pts</Text>
-          <Text allowFontScaling style={styles.until}>{remaining} points until{"\n"}your free drink.</Text>
-          <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: data.freeDrinkAt, now: data.points }} style={styles.track}>
-            <View style={[styles.fill, { width: (String(progress * 100) + "%") as `${number}%` }]} />
+      <View style={styles.passport}>
+        <View style={styles.passportNotchLeft} />
+        <View style={styles.passportNotchRight} />
+
+        <View style={styles.passportTop}>
+          <View>
+            <Text allowFontScaling style={styles.passportEyebrow}>CASA MATCHA · MEMBER 001</Text>
+            <Text allowFontScaling style={styles.points}>{data.points}</Text>
+            <Text allowFontScaling style={styles.pointsLabel}>POINTS</Text>
           </View>
+          <AstronautBadge size={94} />
         </View>
-        <View style={styles.mascotWrap}><AstronautBadge size={98} /></View>
-        <Sparkle size={17} color={colors.goldLight} />
+
+        <View style={styles.passportRule} />
+
+        <View style={styles.passportProgressRow}>
+          <View style={styles.progressCopy}>
+            <Text allowFontScaling style={styles.progressMain}>{remaining} to go.</Text>
+            <Text allowFontScaling style={styles.progressSub}>Then the next drink is on the Casa.</Text>
+          </View>
+          <Text allowFontScaling style={styles.progressRatio}>
+            {data.points}/{data.freeDrinkAt}
+          </Text>
+        </View>
+
+        <View
+          accessibilityRole="progressbar"
+          accessibilityValue={{ min: 0, max: data.freeDrinkAt, now: data.points }}
+          style={styles.track}
+        >
+          <View
+            style={[
+              styles.fill,
+              { width: (String(progress * 100) + "%") as `${number}%` }
+            ]}
+          />
+        </View>
+
+        <View style={styles.passportBottom}>
+          <Text allowFontScaling style={styles.passportSerial}>CM · GOOD DRINKS · 2026</Text>
+          <Text allowFontScaling style={styles.passportSerial}>✦</Text>
+        </View>
       </View>
 
-      <View style={styles.perks}>
-        <Perk icon="heart-outline" label="Earn Points" />
-        <Perk icon="shopping-outline" label="Order Ahead" />
-        <Perk icon="star-four-points-outline" label="Exclusive Drops" />
-        <Perk icon="cake-variant-outline" label="Birthday Rewards" />
+      <View style={styles.perksBlock}>
+        <View style={styles.sectionLabelRow}>
+          <Text allowFontScaling style={styles.sectionEyebrow}>MEMBER PERKS</Text>
+          <Text allowFontScaling style={styles.sectionCount}>04</Text>
+        </View>
+        <View style={styles.perks}>
+          <Perk icon="heart-outline" number="01" label="Earn points" />
+          <Perk icon="shopping-outline" number="02" label="Order ahead" />
+          <Perk icon="star-four-points-outline" number="03" label="Exclusive drops" />
+          <Perk icon="cake-variant-outline" number="04" label="Birthday rewards" />
+        </View>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text allowFontScaling style={styles.sectionTitle}>Your Recent Orders</Text>
-          <Text allowFontScaling style={styles.miniLink}>See all</Text>
+          <View>
+            <Text allowFontScaling style={styles.sectionEyebrow}>RUN IT BACK</Text>
+            <Text allowFontScaling style={styles.sectionTitle}>Recent orders.</Text>
+          </View>
+          <Text allowFontScaling style={styles.sectionCount}>
+            {String(data.recentOrders.length).padStart(2, "0")}
+          </Text>
         </View>
-        {data.recentOrders.length ? data.recentOrders.map((order) => {
-          const first = menuItems.find((item) => item.id === order.itemIds[0]);
-          return (
-            <View key={order.id} style={styles.recentCard}>
-              {first ? <Image source={{ uri: first.image }} style={styles.thumb} contentFit="cover" accessibilityLabel={first.name} /> : null}
-              <View style={styles.recentCopy}>
-                <Text allowFontScaling style={styles.recentName}>{first?.name ?? "Recent order"}</Text>
-                <Text allowFontScaling style={styles.recentMeta}>{order.locationId === "friendswood" ? "Friendswood" : "Webster"} · {order.label}</Text>
+
+        {data.recentOrders.length ? (
+          data.recentOrders.map((order, index) => {
+            const first = menuItems.find((item) => item.id === order.itemIds[0]);
+            return (
+              <View key={order.id} style={styles.recentCard}>
+                <Text allowFontScaling={false} style={styles.recentIndex}>
+                  {String(index + 1).padStart(2, "0")}
+                </Text>
+                {first ? (
+                  <Image
+                    source={{ uri: first.image }}
+                    style={styles.thumb}
+                    contentFit="cover"
+                    accessibilityLabel={first.name}
+                  />
+                ) : null}
+                <View style={styles.recentCopy}>
+                  <Text allowFontScaling style={styles.recentName}>
+                    {first?.name ?? "Recent order"}
+                  </Text>
+                  <Text allowFontScaling style={styles.recentMeta}>
+                    {order.locationId === "friendswood" ? "Friendswood" : "Webster"} · {order.label}
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Reorder recent items"
+                  onPress={() => order.itemIds.forEach(addToCart)}
+                  style={({ pressed }) => [styles.reorder, pressed && { opacity: 0.78 }]}
+                >
+                  <MaterialCommunityIcons name="refresh" size={18} color={colors.forest} />
+                </Pressable>
               </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Reorder recent items"
-                onPress={() => order.itemIds.forEach(addToCart)}
-                style={styles.reorder}
-              >
-                <Text allowFontScaling style={styles.reorderText}>Reorder</Text>
-              </Pressable>
-            </View>
-          );
-        }) : <EmptyState title="No recent orders yet." body="Your favorites will be easy to reorder here." />}
+            );
+          })
+        ) : (
+          <EmptyState title="No recent orders yet." body="Your favorites will be easy to reorder here." />
+        )}
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text allowFontScaling style={styles.sectionTitle}>Your Cart</Text>
-          <Text allowFontScaling style={styles.miniLink}>{cart.length} {cart.length === 1 ? "item" : "items"}</Text>
+          <View>
+            <Text allowFontScaling style={styles.sectionEyebrow}>THE RECEIPT</Text>
+            <Text allowFontScaling style={styles.sectionTitle}>Your cart.</Text>
+          </View>
+          <Text allowFontScaling style={styles.sectionCount}>
+            {String(cart.length).padStart(2, "0")}
+          </Text>
         </View>
 
         {cart.length === 0 ? (
           <EmptyState title="Your cart is waiting." body="Add a drink from the Menu and it will show up here." />
         ) : (
-          <View style={styles.cartCard}>
+          <View style={styles.receipt}>
+            <View style={styles.receiptHeader}>
+              <Text allowFontScaling style={styles.receiptBrand}>CASA MATCHA</Text>
+              <Text allowFontScaling style={styles.receiptMeta}>ORDER PREVIEW · PHASE 1</Text>
+            </View>
+
+            <View style={styles.receiptRule} />
+
             {cart.map((line) => {
               const item = menuItems.find((candidate) => candidate.id === line.itemId);
               if (!item) return null;
+
               return (
                 <View key={line.itemId} style={styles.cartLine}>
-                  <Image source={{ uri: item.image }} style={styles.cartThumb} contentFit="cover" accessibilityLabel={item.name} />
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.cartThumb}
+                    contentFit="cover"
+                    accessibilityLabel={item.name}
+                  />
                   <View style={styles.cartCopy}>
                     <Text allowFontScaling style={styles.cartName}>{item.name}</Text>
-                    <Text allowFontScaling style={styles.cartPrice}>{"$" + item.price.toFixed(2)}</Text>
+                    <Text allowFontScaling style={styles.cartPrice}>
+                      {"$" + item.price.toFixed(2)}
+                    </Text>
                   </View>
                   <View style={styles.stepper}>
-                    <Pressable accessibilityRole="button" accessibilityLabel={"Decrease " + item.name} onPress={() => updateQuantity(item.id, line.quantity - 1)} style={styles.stepButton}>
-                      <MaterialCommunityIcons name="minus" size={17} color={colors.forest} />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={"Decrease " + item.name}
+                      onPress={() => updateQuantity(item.id, line.quantity - 1)}
+                      style={styles.stepButton}
+                    >
+                      <MaterialCommunityIcons name="minus" size={16} color={colors.forest} />
                     </Pressable>
                     <Text allowFontScaling style={styles.qty}>{line.quantity}</Text>
-                    <Pressable accessibilityRole="button" accessibilityLabel={"Increase " + item.name} onPress={() => updateQuantity(item.id, line.quantity + 1)} style={styles.stepButton}>
-                      <MaterialCommunityIcons name="plus" size={17} color={colors.forest} />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={"Increase " + item.name}
+                      onPress={() => updateQuantity(item.id, line.quantity + 1)}
+                      style={styles.stepButton}
+                    >
+                      <MaterialCommunityIcons name="plus" size={16} color={colors.forest} />
                     </Pressable>
                   </View>
                 </View>
               );
             })}
 
+            <View style={styles.receiptRule} />
+
             <View style={styles.totals}>
               <Row label="Subtotal" value={"$" + subtotal.toFixed(2)} />
-              <Row label={providerName === "mock" ? "Tax · demo 8.25%" : "Tax"} value={"$" + tax.toFixed(2)} muted />
-              <View style={styles.divider} />
+              <Row
+                label={providerName === "mock" ? "Tax · demo 8.25%" : "Tax"}
+                value={"$" + tax.toFixed(2)}
+                muted
+              />
+              <View style={styles.totalRule} />
               <Row label="Total" value={"$" + total.toFixed(2)} strong />
             </View>
 
-            <Pressable accessibilityRole="button" accessibilityLabel="Checkout with Toast" onPress={checkout} style={styles.checkout}>
-              <Text allowFontScaling style={styles.checkoutText}>Checkout</Text>
-              <MaterialCommunityIcons name="arrow-right" size={20} color={colors.goldLight} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Checkout with Toast"
+              onPress={checkout}
+              style={({ pressed }) => [styles.checkout, pressed && { transform: [{ scale: 0.99 }] }]}
+            >
+              <View>
+                <Text allowFontScaling style={styles.checkoutEyebrow}>HAND OFF TO TOAST</Text>
+                <Text allowFontScaling style={styles.checkoutText}>Checkout</Text>
+              </View>
+              <View style={styles.checkoutArrow}>
+                <MaterialCommunityIcons name="arrow-top-right" size={19} color={colors.forest} />
+              </View>
             </Pressable>
-            <Text allowFontScaling style={styles.demoNote}>Phase 1 demo cart · checkout hands off to Toast Online Ordering.</Text>
+
+            <Text allowFontScaling style={styles.demoNote}>
+              Phase 1 demo cart · production totals and payment stay with Toast.
+            </Text>
           </View>
         )}
       </View>
@@ -146,76 +279,407 @@ export default function RewardsScreen() {
   );
 }
 
-function Perk({ icon, label }: { icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string }) {
+function Perk({
+  icon,
+  number,
+  label
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  number: string;
+  label: string;
+}) {
   return (
     <View style={styles.perk}>
-      <View style={styles.perkIcon}><MaterialCommunityIcons name={icon} size={20} color={colors.forest} /></View>
+      <View style={styles.perkTop}>
+        <Text allowFontScaling={false} style={styles.perkNumber}>{number}</Text>
+        <MaterialCommunityIcons name={icon} size={19} color={colors.forest} />
+      </View>
       <Text allowFontScaling style={styles.perkLabel}>{label}</Text>
     </View>
   );
 }
 
-function Row({ label, value, strong, muted }: { label: string; value: string; strong?: boolean; muted?: boolean }) {
+function Row({
+  label,
+  value,
+  strong,
+  muted
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  muted?: boolean;
+}) {
   return (
     <View style={styles.row}>
-      <Text allowFontScaling style={[styles.rowLabel, strong && styles.rowStrong, muted && { color: colors.muted }]}>{label}</Text>
-      <Text allowFontScaling style={[styles.rowValue, strong && styles.rowStrong, muted && { color: colors.muted }]}>{value}</Text>
+      <Text
+        allowFontScaling
+        style={[styles.rowLabel, strong && styles.rowStrong, muted && { color: colors.muted }]}
+      >
+        {label}
+      </Text>
+      <Text
+        allowFontScaling
+        style={[styles.rowValue, strong && styles.rowStrong, muted && { color: colors.muted }]}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingTop: spacing.xs },
-  title: { ...type.displayL, color: colors.forest },
-  kicker: { ...type.label, color: colors.gold, marginTop: 6 },
-  pointsCard: {
-    minHeight: 220,
-    borderRadius: radius.lg,
-    backgroundColor: colors.forest,
-    padding: spacing.lg,
+  header: { paddingTop: spacing.xs, gap: 10 },
+  headerMeta: { flexDirection: "row", justifyContent: "space-between" },
+  edition: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 8,
+    letterSpacing: 1.15,
+    color: colors.muted
+  },
+  title: {
+    fontFamily: fonts.display,
+    fontSize: 48,
+    lineHeight: 46,
+    letterSpacing: -1.8,
+    color: colors.forest
+  },
+  titleItalic: {
+    fontFamily: fonts.displayRegular,
+    fontStyle: "italic",
+    color: colors.caramel
+  },
+
+  passport: {
+    minHeight: 326,
+    borderRadius: 30,
+    padding: 22,
+    backgroundColor: colors.forest3,
     overflow: "hidden",
+    ...shadow.float
+  },
+  passportNotchLeft: {
+    position: "absolute",
+    left: -13,
+    top: 172,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.cream
+  },
+  passportNotchRight: {
+    position: "absolute",
+    right: -13,
+    top: 172,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.cream
+  },
+  passportTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between"
+  },
+  passportEyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 8,
+    letterSpacing: 1.25,
+    color: colors.goldLight
+  },
+  points: {
+    marginTop: 12,
+    fontFamily: fonts.display,
+    fontSize: 68,
+    lineHeight: 66,
+    letterSpacing: -2.5,
+    color: colors.cream
+  },
+  pointsLabel: {
+    marginTop: 2,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 9,
+    letterSpacing: 1.5,
+    color: "rgba(243,236,221,0.62)"
+  },
+  passportRule: {
+    marginVertical: 18,
+    borderStyle: "dashed",
+    borderTopWidth: 1,
+    borderColor: "rgba(243,236,221,0.2)"
+  },
+  passportProgressRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 16
+  },
+  progressCopy: { flex: 1, gap: 3 },
+  progressMain: {
+    fontFamily: fonts.displayRegular,
+    fontSize: 22,
+    color: colors.goldLight
+  },
+  progressSub: {
+    fontFamily: fonts.body,
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: "rgba(243,236,221,0.66)"
+  },
+  progressRatio: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 9,
+    letterSpacing: 1.0,
+    color: "rgba(243,236,221,0.6)"
+  },
+  track: {
+    height: 6,
+    borderRadius: 999,
+    marginTop: 13,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    overflow: "hidden"
+  },
+  fill: { height: "100%", borderRadius: 999, backgroundColor: colors.goldLight },
+  passportBottom: {
+    marginTop: 18,
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  passportSerial: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 7.5,
+    letterSpacing: 1.1,
+    color: "rgba(243,236,221,0.48)"
+  },
+
+  perksBlock: { gap: 12 },
+  sectionLabelRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between"
+  },
+  sectionEyebrow: {
+    ...type.label,
+    fontSize: 8,
+    letterSpacing: 1.25,
+    color: colors.gold
+  },
+  sectionCount: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 8,
+    letterSpacing: 1.1,
+    color: colors.muted
+  },
+  perks: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 10
+  },
+  perk: {
+    width: "48.4%",
+    minHeight: 105,
+    padding: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "rgba(255,249,238,0.56)",
+    justifyContent: "space-between"
+  },
+  perkTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  perkNumber: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 8,
+    letterSpacing: 1.1,
+    color: colors.gold
+  },
+  perkLabel: {
+    fontFamily: fonts.displayRegular,
+    fontSize: 18,
+    lineHeight: 20,
+    color: colors.forest
+  },
+
+  section: { gap: 12 },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end"
+  },
+  sectionTitle: {
+    marginTop: 3,
+    fontFamily: fonts.display,
+    fontSize: 30,
+    lineHeight: 31,
+    letterSpacing: -0.9,
+    color: colors.forest
+  },
+
+  recentCard: {
+    minHeight: 90,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border
+  },
+  recentIndex: {
+    width: 22,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 8,
+    letterSpacing: 1.0,
+    color: colors.gold
+  },
+  thumb: {
+    width: 62,
+    height: 62,
+    borderRadius: 18,
+    backgroundColor: colors.paper
+  },
+  recentCopy: { flex: 1 },
+  recentName: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    lineHeight: 20,
+    color: colors.ink
+  },
+  recentMeta: {
+    marginTop: 4,
+    fontFamily: fonts.body,
+    fontSize: 11.5,
+    color: colors.muted
+  },
+  reorder: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.paper,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+
+  receipt: {
+    borderRadius: 28,
+    padding: 18,
+    backgroundColor: colors.foam,
+    borderWidth: 1,
+    borderColor: colors.border,
     ...shadow.card
   },
-  pointsCopy: { flex: 1, zIndex: 2 },
-  pointsEyebrow: { ...type.label, color: colors.goldLight, marginBottom: spacing.sm },
-  points: { fontFamily: fonts.display, fontSize: 36, lineHeight: 40, color: colors.goldLight },
-  until: { ...type.bodySmall, color: colors.cream, marginTop: 2 },
-  track: { height: 9, borderRadius: 99, backgroundColor: "rgba(255,255,255,0.18)", marginTop: spacing.md, overflow: "hidden" },
-  fill: { height: "100%", borderRadius: 99, backgroundColor: colors.goldLight },
-  mascotWrap: { position: "absolute", right: 18, bottom: 32, opacity: 0.94 },
-  perks: { flexDirection: "row", justifyContent: "space-between", gap: spacing.xs },
-  perk: { flex: 1, alignItems: "center", gap: 7 },
-  perkIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.paper, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.border },
-  perkLabel: { fontFamily: fonts.bodyMedium, color: colors.forest, fontSize: 10.5, lineHeight: 13, textAlign: "center" },
-  section: { gap: spacing.sm },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  sectionTitle: { ...type.title, color: colors.forest },
-  miniLink: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.muted },
-  recentCard: { minHeight: 76, borderRadius: radius.md, backgroundColor: colors.foam, borderWidth: 1, borderColor: colors.border, flexDirection: "row", alignItems: "center", padding: spacing.sm, gap: spacing.sm },
-  thumb: { width: 52, height: 52, borderRadius: 13, backgroundColor: colors.paper },
-  recentCopy: { flex: 1 },
-  recentName: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink },
-  recentMeta: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 3 },
-  reorder: { minHeight: 44, borderRadius: radius.pill, backgroundColor: colors.forest, justifyContent: "center", paddingHorizontal: spacing.md },
-  reorderText: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.cream },
-  cartCard: { borderRadius: radius.lg, backgroundColor: colors.foam, padding: spacing.md, gap: spacing.md, ...shadow.card },
-  cartLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  cartThumb: { width: 50, height: 50, borderRadius: 12, backgroundColor: colors.paper },
+  receiptHeader: { gap: 3 },
+  receiptBrand: {
+    fontFamily: fonts.display,
+    fontSize: 21,
+    letterSpacing: -0.5,
+    color: colors.forest
+  },
+  receiptMeta: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 7.5,
+    letterSpacing: 1.1,
+    color: colors.muted
+  },
+  receiptRule: {
+    marginVertical: 15,
+    borderStyle: "dashed",
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  cartLine: {
+    minHeight: 70,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10
+  },
+  cartThumb: {
+    width: 54,
+    height: 54,
+    borderRadius: 15,
+    backgroundColor: colors.paper
+  },
   cartCopy: { flex: 1 },
-  cartName: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink },
-  cartPrice: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
-  stepper: { flexDirection: "row", alignItems: "center", gap: 7 },
-  stepButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
-  qty: { minWidth: 18, textAlign: "center", fontFamily: fonts.bodyMedium, color: colors.ink },
-  totals: { gap: 7, marginTop: spacing.xs },
+  cartName: {
+    fontFamily: fonts.displayRegular,
+    fontSize: 16,
+    color: colors.ink
+  },
+  cartPrice: {
+    marginTop: 2,
+    fontFamily: fonts.body,
+    fontSize: 11.5,
+    color: colors.muted
+  },
+  stepper: { flexDirection: "row", alignItems: "center", gap: 5 },
+  stepButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  qty: {
+    minWidth: 18,
+    textAlign: "center",
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: colors.ink
+  },
+  totals: { gap: 8 },
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  rowLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.ink },
-  rowValue: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.ink },
-  rowStrong: { fontFamily: fonts.bodyMedium, fontSize: 18, color: colors.forest },
-  divider: { height: 1, backgroundColor: colors.border, marginVertical: 5 },
-  checkout: { minHeight: 54, borderRadius: radius.pill, backgroundColor: colors.forest, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing.sm },
-  checkoutText: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.cream },
-  demoNote: { fontFamily: fonts.body, fontSize: 11.5, lineHeight: 16, color: colors.muted, textAlign: "center" }
+  rowLabel: { fontFamily: fonts.body, fontSize: 12.5, color: colors.ink },
+  rowValue: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.ink },
+  rowStrong: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    color: colors.forest
+  },
+  totalRule: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
+  checkout: {
+    minHeight: 66,
+    marginTop: 16,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    backgroundColor: colors.forest3,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  checkoutEyebrow: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 7.5,
+    letterSpacing: 1.15,
+    color: colors.goldLight
+  },
+  checkoutText: {
+    marginTop: 3,
+    fontFamily: fonts.display,
+    fontSize: 24,
+    color: colors.cream
+  },
+  checkoutArrow: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.goldLight
+  },
+  demoNote: {
+    marginTop: 10,
+    fontFamily: fonts.body,
+    fontSize: 10.5,
+    lineHeight: 15,
+    color: colors.muted,
+    textAlign: "center"
+  }
 });
