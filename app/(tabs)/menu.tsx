@@ -83,7 +83,7 @@ function MenuCard({ item, favorite, onFavorite, onAdd, onOpen }: { item: MenuIte
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={item.name + ", " + item.descriptor + ", $" + item.price.toFixed(2)} onPress={onOpen} style={({ pressed }) => [styles.card, pressed && { transform: [{ scale: 0.985 }] }]}>
       <View style={styles.imageWrap}>
-        <Image source={{ uri: item.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={180} accessibilityLabel={item.name} />
+        <Image source={{ uri: item.image }} style={StyleSheet.absoluteFill} contentFit="cover" transition={180} accessibilityLabel={item.name} />
         <Pressable onPress={(event) => { event.stopPropagation(); onFavorite(); }} accessibilityRole="button" accessibilityLabel={(favorite ? "Remove " : "Favorite ") + item.name} style={styles.heart}>
           <MaterialCommunityIcons name={favorite ? "heart" : "heart-outline"} size={21} color={favorite ? colors.caramel : colors.forest} />
         </Pressable>
