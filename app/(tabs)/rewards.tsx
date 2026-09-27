@@ -49,11 +49,9 @@ export default function RewardsScreen() {
 
       <View style={styles.pointsCard}>
         <View style={styles.pointsCopy}>
-          <Text allowFontScaling style={styles.pointsEyebrow}>GOOD DRINKS{"
-"}BRIGHTER PEOPLE</Text>
+          <Text allowFontScaling style={styles.pointsEyebrow}>GOOD DRINKS{"\n"}BRIGHTER PEOPLE</Text>
           <Text allowFontScaling style={styles.points}>{data.points} pts</Text>
-          <Text allowFontScaling style={styles.until}>{remaining} points until{"
-"}your free drink.</Text>
+          <Text allowFontScaling style={styles.until}>{remaining} points until{"\n"}your free drink.</Text>
           <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: data.freeDrinkAt, now: data.points }} style={styles.track}>
             <View style={[styles.fill, { width: String(progress * 100) + "%" }]} />
           </View>
