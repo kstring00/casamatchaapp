@@ -1,13 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { useEffect, useMemo, useState } from "react";
 import { AppScreen } from "@/components/AppScreen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
-import { featuredEvent, story } from "@/data/mock";
+import { featuredEvent as mockEvent, story } from "@/data/mock";
+import { getFeaturedEvent, type EventContent } from "@/content/service";
 import { commerceProvider } from "@/providers";
 import { colors, fonts, radius, shadow, spacing, type } from "@/theme";
 import type { CafeLocation } from "@/types/commerce";
@@ -26,6 +27,8 @@ export default function CommunityScreen() {
   const initial = sections.some((item) => item.id === params.section) ? (params.section as Section) : "locations";
   const [section, setSection] = useState<Section>(initial);
   const { data: locations, loading, error, retry } = useAsync(() => commerceProvider.getLocations(), []);
+  const eventState = useAsync(getFeaturedEvent, []);
+  const event = eventState.data ?? mockEvent;
 
   useEffect(() => {
     if (params.section && sections.some((item) => item.id === params.section)) setSection(params.section as Section);
@@ -34,22 +37,20 @@ export default function CommunityScreen() {
   return (
     <AppScreen>
       <View style={styles.header}>
-        <Text allowFontScaling style={styles.title}>Community</Text>
-        <Text allowFontScaling style={styles.kicker}>MATCHA · PEOPLE · CULTURA</Text>
+        <View style={{ flex: 1 }}>
+          <Text allowFontScaling style={styles.title}>Community</Text>
+          <Text allowFontScaling style={styles.kicker}>MATCHA · PEOPLE · CULTURA</Text>
+        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel="About Casa Matcha app" onPress={() => router.push("/about")} style={styles.infoButton}>
+          <MaterialCommunityIcons name="information-outline" size={23} color={colors.forest} />
+        </Pressable>
       </View>
 
       <View style={styles.segments}>
         {sections.map((item) => {
           const active = section === item.id;
           return (
-            <Pressable
-              key={item.id}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={"Show " + item.label}
-              onPress={() => setSection(item.id)}
-              style={[styles.segment, active && styles.segmentActive]}
-            >
+            <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={"Show " + item.label} onPress={() => setSection(item.id)} style={[styles.segment, active && styles.segmentActive]}>
               <Text allowFontScaling style={[styles.segmentText, active && styles.segmentTextActive]}>{item.label}</Text>
             </Pressable>
           );
@@ -63,7 +64,12 @@ export default function CommunityScreen() {
         <LocationsSection locations={locations} />
       ) : null}
 
-      {section === "events" ? <EventsSection /> : null}
+      {section === "events" ? (
+        <>
+          {eventState.error ? <ErrorState message="Live event updates are unavailable. Showing saved event content." retry={eventState.retry} /> : null}
+          <EventsSection event={event} />
+        </>
+      ) : null}
       {section === "story" ? <StorySection /> : null}
     </AppScreen>
   );
@@ -81,17 +87,10 @@ function LocationsSection({ locations }: { locations: CafeLocation[] }) {
       <View style={styles.mapFrame}>
         <MapView style={StyleSheet.absoluteFillObject} initialRegion={center} accessibilityLabel="Map showing Casa Matcha Friendswood and Webster">
           {locations.map((location) => (
-            <Marker
-              key={location.id}
-              coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-              title={"Casa Matcha " + location.name}
-              description={location.address1}
-              pinColor={colors.forest}
-            />
+            <Marker key={location.id} coordinate={{ latitude: location.latitude, longitude: location.longitude }} title={"Casa Matcha " + location.name} description={location.address1} pinColor={colors.forest} />
           ))}
         </MapView>
       </View>
-
       <View style={styles.locationGrid}>
         {locations.map((location) => <LocationCard key={location.id} location={location} />)}
       </View>
@@ -116,8 +115,7 @@ function LocationCard({ location }: { location: CafeLocation }) {
       <View style={styles.locationTop}>
         <View>
           <Text allowFontScaling style={styles.locationName}>{location.name}</Text>
-          <Text allowFontScaling style={styles.address}>{location.address1}{"
-"}{location.city}, {location.state} {location.zip}</Text>
+          <Text allowFontScaling style={styles.address}>{location.address1}{"\n"}{location.city}, {location.state} {location.zip}</Text>
         </View>
         <MaterialCommunityIcons name="map-marker-radius-outline" size={26} color={colors.gold} />
       </View>
@@ -136,21 +134,26 @@ function LocationCard({ location }: { location: CafeLocation }) {
   );
 }
 
-function EventsSection() {
-  const tickets = () => WebBrowser.openBrowserAsync(featuredEvent.ticketUrl, {
+function EventsSection({ event }: { event: EventContent }) {
+  const tickets = () => WebBrowser.openBrowserAsync(event.ticketUrl, {
     presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     controlsColor: colors.forest
   });
+  const locationName = event.locationId === "webster" ? "Webster" : "Friendswood";
+  const date = event.date ? new Date(event.date) : null;
+  const month = date && !Number.isNaN(date.getTime()) ? new Intl.DateTimeFormat("en-US", { month: "short" }).format(date).toUpperCase() : "OCT";
+  const day = date && !Number.isNaN(date.getTime()) ? String(date.getDate()) : "26";
+
   return (
     <View style={styles.sectionStack}>
       <View style={styles.eventCard}>
-        <Image source={{ uri: featuredEvent.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel="Casa Matcha event" />
+        <Image source={{ uri: event.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel="Casa Matcha event" />
         <View style={styles.eventShade} />
         <View style={styles.eventCopy}>
           <Text allowFontScaling style={styles.eventEyebrow}>FEATURED EVENT</Text>
-          <Text allowFontScaling style={styles.eventTitle}>{featuredEvent.title}</Text>
-          <Text allowFontScaling style={styles.eventMeta}>{featuredEvent.dateLabel} · Casa Matcha Webster</Text>
-          <Pressable accessibilityRole="button" accessibilityLabel="Get tickets for Matcha Café y Perreo" onPress={tickets} style={styles.ticketButton}>
+          <Text allowFontScaling style={styles.eventTitle}>{event.title}</Text>
+          <Text allowFontScaling style={styles.eventMeta}>{event.dateLabel} · Casa Matcha {locationName}</Text>
+          <Pressable accessibilityRole="button" accessibilityLabel={"Get tickets for " + event.title} onPress={tickets} style={styles.ticketButton}>
             <Text allowFontScaling style={styles.ticketText}>Get Tickets</Text>
             <MaterialCommunityIcons name="arrow-top-right" size={18} color={colors.goldLight} />
           </Pressable>
@@ -161,12 +164,12 @@ function EventsSection() {
         <Text allowFontScaling style={styles.sectionTitle}>Upcoming</Text>
         <View style={styles.eventRow}>
           <View style={styles.dateBadge}>
-            <Text allowFontScaling style={styles.dateMonth}>OCT</Text>
-            <Text allowFontScaling style={styles.dateDay}>26</Text>
+            <Text allowFontScaling style={styles.dateMonth}>{month}</Text>
+            <Text allowFontScaling style={styles.dateDay}>{day}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text allowFontScaling style={styles.rowEventTitle}>{featuredEvent.title}</Text>
-            <Text allowFontScaling style={styles.rowEventMeta}>8 PM · Webster</Text>
+            <Text allowFontScaling style={styles.rowEventTitle}>{event.title}</Text>
+            <Text allowFontScaling style={styles.rowEventMeta}>{event.dateLabel} · {locationName}</Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={22} color={colors.forest} />
         </View>
@@ -185,34 +188,34 @@ function StorySection() {
     <View style={styles.sectionStack}>
       <View style={styles.storyHero}>
         <Image source={{ uri: story.ownerImage }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel="Casa Matcha owner" />
-        <View style={styles.storyLabel}>
-          <Text allowFontScaling style={styles.storyLabelText}>MORE THAN DRINKS</Text>
-        </View>
+        <View style={styles.storyLabel}><Text allowFontScaling style={styles.storyLabelText}>MORE THAN DRINKS</Text></View>
       </View>
-
       <View style={styles.storyCopy}>
         <Text allowFontScaling style={styles.storyTitle}>{story.title}</Text>
         <Text allowFontScaling style={styles.storyBody}>{story.body}</Text>
         <Text allowFontScaling style={styles.script}>familia first, always.</Text>
       </View>
-
       <View style={styles.quoteCard}>
         <MaterialCommunityIcons name="format-quote-open" size={28} color={colors.gold} />
         <Text allowFontScaling style={styles.quote}>“{story.testimonial}”</Text>
         <Text allowFontScaling style={styles.quoteBy}>— {story.testimonialBy}</Text>
       </View>
-
       <Pressable accessibilityRole="link" accessibilityLabel="Open Casa Matcha on Instagram" onPress={openInstagram} style={styles.instagram}>
         <MaterialCommunityIcons name="instagram" size={22} color={colors.cream} />
         <Text allowFontScaling style={styles.instagramText}>{story.instagram}</Text>
         <MaterialCommunityIcons name="arrow-top-right" size={18} color={colors.goldLight} />
       </Pressable>
+      <View style={styles.legalLinks}>
+        <Pressable accessibilityRole="button" accessibilityLabel="About the app" onPress={() => router.push("/about")} style={styles.legalLink}><Text style={styles.legalText}>About</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Privacy policy" onPress={() => router.push("/privacy")} style={styles.legalLink}><Text style={styles.legalText}>Privacy</Text></Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingTop: spacing.xs },
+  header: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingTop: spacing.xs },
+  infoButton: { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(31,58,43,0.06)" },
   title: { ...type.displayL, color: colors.forest },
   kicker: { ...type.label, color: colors.gold, marginTop: 6 },
   segments: { flexDirection: "row", minHeight: 48, borderRadius: radius.pill, backgroundColor: "rgba(31,58,43,0.07)", padding: 4, gap: 4 },
@@ -259,5 +262,8 @@ const styles = StyleSheet.create({
   quote: { fontFamily: fonts.displayRegular, fontSize: 24, lineHeight: 31, color: colors.forest },
   quoteBy: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.muted },
   instagram: { minHeight: 54, borderRadius: radius.pill, backgroundColor: colors.forest, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing.sm, paddingHorizontal: spacing.lg },
-  instagramText: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.cream }
+  instagramText: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.cream },
+  legalLinks: { flexDirection: "row", gap: spacing.sm, justifyContent: "center" },
+  legalLink: { minHeight: 44, justifyContent: "center", paddingHorizontal: spacing.md },
+  legalText: { fontFamily: fonts.bodyMedium, color: colors.forest, fontSize: 13, textDecorationLine: "underline" }
 });
