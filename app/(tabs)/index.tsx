@@ -51,7 +51,7 @@ export default function HomeScreen() {
       <View style={styles.hero}>
         <Image
           source={{ uri: heroImage }}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           contentFit="cover"
           contentPosition="center"
           transition={250}
@@ -61,7 +61,7 @@ export default function HomeScreen() {
           colors={["rgba(243,236,221,0.98)", "rgba(243,236,221,0.78)", "rgba(243,236,221,0.08)"]}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
         />
         <View style={styles.heroCopy}>
           <View style={styles.eyebrowRow}>
