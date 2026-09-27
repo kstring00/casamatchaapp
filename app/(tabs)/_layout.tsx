@@ -1,13 +1,13 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View, type ColorValue } from "react-native";
 import { AstronautBadge } from "@/components/Brand";
 import { useAppState } from "@/state/AppState";
 import { commerceProvider } from "@/providers";
 import { colors, fonts, shadow } from "@/theme";
 
-function Icon({ name, color, size }: { name: keyof typeof MaterialCommunityIcons.glyphMap; color: string; size: number }) {
+function Icon({ name, color, size }: { name: keyof typeof MaterialCommunityIcons.glyphMap; color: ColorValue; size: number }) {
   return <MaterialCommunityIcons name={name} color={color} size={size} />;
 }
 
