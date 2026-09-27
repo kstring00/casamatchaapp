@@ -53,7 +53,7 @@ export default function RewardsScreen() {
           <Text allowFontScaling style={styles.points}>{data.points} pts</Text>
           <Text allowFontScaling style={styles.until}>{remaining} points until{"\n"}your free drink.</Text>
           <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: data.freeDrinkAt, now: data.points }} style={styles.track}>
-            <View style={[styles.fill, { width: String(progress * 100) + "%" }]} />
+            <View style={[styles.fill, { width: (String(progress * 100) + "%") as `${number}%` }]} />
           </View>
         </View>
         <View style={styles.mascotWrap}><AstronautBadge size={98} /></View>
