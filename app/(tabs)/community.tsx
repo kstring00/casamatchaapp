@@ -153,8 +153,7 @@ function LocationsSection({ locations }: { locations: CafeLocation[] }) {
         <Text allowFontScaling style={styles.sectionEyebrow}>FIND YOUR CASA</Text>
         <Text allowFontScaling style={styles.locationIntroTitle}>
           Same energy.
-          {"
-"}Different corner.
+          {"\n"}Different corner.
         </Text>
       </View>
 
@@ -196,8 +195,7 @@ function LocationCard({ location, index }: { location: CafeLocation; index: numb
         <Text allowFontScaling style={styles.locationName}>{location.name}</Text>
         <Text allowFontScaling style={styles.address}>
           {location.address1}
-          {"
-"}
+          {"\n"}
           {location.city}, {location.state} {location.zip}
         </Text>
         <Text allowFontScaling style={styles.hours}>{location.hoursSummary}</Text>
