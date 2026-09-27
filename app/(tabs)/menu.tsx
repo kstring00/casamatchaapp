@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { AppScreen } from "@/components/AppScreen";
 import { EmptyState, ErrorState, LoadingState } from "@/components/DataState";
 import { LocationToggle } from "@/components/LocationToggle";
+import { maybePromptNotifications } from "@/notifications/client";
 import { commerceProvider } from "@/providers";
 import { useAppState } from "@/state/AppState";
 import { colors, fonts, radius, shadow, spacing, type } from "@/theme";
@@ -17,7 +18,7 @@ const categories: MenuCategory[] = ["Matcha", "Coffee", "Bakery", "Seasonal"];
 export default function MenuScreen() {
   const params = useLocalSearchParams<{ category?: string }>();
   const requested = params.category;
-  const { locationId, favorites, toggleFavorite, addToCart } = useAppState();
+  const { locationId, favorites, toggleFavorite, addToCart, notificationPrefs } = useAppState();
   const [category, setCategory] = useState<MenuCategory>(categories.includes(requested as MenuCategory) ? (requested as MenuCategory) : "Matcha");
   const [query, setQuery] = useState("");
   const { data, loading, error, retry } = useAsync(() => commerceProvider.getMenu(locationId), [locationId]);
@@ -31,6 +32,11 @@ export default function MenuScreen() {
       return categoryMatch && searchMatch;
     });
   }, [data, category, query]);
+
+  const favoriteItem = (id: string) => {
+    toggleFavorite(id);
+    maybePromptNotifications(locationId, notificationPrefs, "favorite").catch(() => {});
+  };
 
   return (
     <AppScreen>
@@ -51,14 +57,7 @@ export default function MenuScreen() {
         {categories.map((value) => {
           const active = value === category;
           return (
-            <Pressable
-              key={value}
-              onPress={() => setCategory(value)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={"Show " + value + " menu items"}
-              style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && { opacity: 0.78 }]}
-            >
+            <Pressable key={value} onPress={() => setCategory(value)} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={"Show " + value + " menu items"} style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && { opacity: 0.78 }]}>
               <Text allowFontScaling style={[styles.chipText, active && styles.chipTextActive]}>{value}</Text>
             </Pressable>
           );
@@ -72,14 +71,7 @@ export default function MenuScreen() {
       {!loading && !error ? (
         <View style={styles.grid}>
           {visible.map((item) => (
-            <MenuCard
-              key={item.id}
-              item={item}
-              favorite={favorites.includes(item.id)}
-              onFavorite={() => toggleFavorite(item.id)}
-              onAdd={() => addToCart(item.id)}
-              onOpen={() => router.push({ pathname: "/menu-item/[id]", params: { id: item.id } })}
-            />
+            <MenuCard key={item.id} item={item} favorite={favorites.includes(item.id)} onFavorite={() => favoriteItem(item.id)} onAdd={() => addToCart(item.id)} onOpen={() => router.push({ pathname: "/menu-item/[id]", params: { id: item.id } })} />
           ))}
         </View>
       ) : null}
@@ -92,12 +84,7 @@ function MenuCard({ item, favorite, onFavorite, onAdd, onOpen }: { item: MenuIte
     <Pressable accessibilityRole="button" accessibilityLabel={item.name + ", " + item.descriptor + ", $" + item.price.toFixed(2)} onPress={onOpen} style={({ pressed }) => [styles.card, pressed && { transform: [{ scale: 0.985 }] }]}>
       <View style={styles.imageWrap}>
         <Image source={{ uri: item.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" transition={180} accessibilityLabel={item.name} />
-        <Pressable
-          onPress={(event) => { event.stopPropagation(); onFavorite(); }}
-          accessibilityRole="button"
-          accessibilityLabel={(favorite ? "Remove " : "Favorite ") + item.name}
-          style={styles.heart}
-        >
+        <Pressable onPress={(event) => { event.stopPropagation(); onFavorite(); }} accessibilityRole="button" accessibilityLabel={(favorite ? "Remove " : "Favorite ") + item.name} style={styles.heart}>
           <MaterialCommunityIcons name={favorite ? "heart" : "heart-outline"} size={21} color={favorite ? colors.caramel : colors.forest} />
         </Pressable>
       </View>
@@ -106,12 +93,7 @@ function MenuCard({ item, favorite, onFavorite, onAdd, onOpen }: { item: MenuIte
         <Text allowFontScaling numberOfLines={2} style={styles.itemDescriptor}>{item.descriptor}</Text>
         <View style={styles.priceRow}>
           <Text allowFontScaling style={styles.price}>{"$" + item.price.toFixed(2)}</Text>
-          <Pressable
-            onPress={(event) => { event.stopPropagation(); onAdd(); }}
-            accessibilityRole="button"
-            accessibilityLabel={"Add " + item.name + " to cart"}
-            style={({ pressed }) => [styles.plus, pressed && { transform: [{ scale: 0.9 }] }]}
-          >
+          <Pressable onPress={(event) => { event.stopPropagation(); onAdd(); }} accessibilityRole="button" accessibilityLabel={"Add " + item.name + " to cart"} style={({ pressed }) => [styles.plus, pressed && { transform: [{ scale: 0.9 }] }]}>
             <MaterialCommunityIcons name="plus" size={19} color={colors.cream} />
           </Pressable>
         </View>

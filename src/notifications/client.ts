@@ -43,7 +43,7 @@ export async function maybePromptNotifications(
   const title = trigger === "favorite" ? "Want first dibs on drops?" : "Get updates from your Casa?";
   const message =
     trigger === "favorite"
-      ? "We can send seasonal drops, events and reward news — never on first launch, only when it is useful."
+      ? "We can send seasonal drops, events and reward news — only when it is useful."
       : "Choose events, seasonal drops and rewards for Friendswood, Webster, or both.";
 
   Alert.alert(title, message, [
@@ -77,24 +77,22 @@ export async function requestAndRegisterPush(locationId: LocationId, prefs: Noti
 
 async function savePushToken(token: string, locationId: LocationId, prefs: NotificationPrefs) {
   if (!supabase) return;
-  const { error } = await supabase.from("push_tokens").upsert(
-    {
-      expo_push_token: token,
+  const { error } = await supabase.functions.invoke("register-push", {
+    body: {
+      token,
       platform: Platform.OS,
-      location_id: locationId,
+      locationId,
       topics: {
         events: prefs.events,
         seasonal: prefs.seasonal,
         rewards: prefs.rewards
       },
-      location_opt_ins: {
+      locationOptIns: {
         friendswood: prefs.friendswood,
         webster: prefs.webster
-      },
-      updated_at: new Date().toISOString()
-    },
-    { onConflict: "expo_push_token" }
-  );
+      }
+    }
+  });
   if (error) throw error;
 }
 
