@@ -56,7 +56,7 @@ export default function HomeScreen() {
           source={{ uri: heroImage }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
-          contentPosition="62% center"
+          contentPosition="center"
           transition={220}
           accessibilityLabel="Iced matcha splashing above a Casa Matcha cup"
         />
