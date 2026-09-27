@@ -60,8 +60,7 @@ export default function MenuScreen() {
           </Text>
         </View>
 
-        <Text allowFontScaling style={styles.title}>Our{"
-"}Menu.</Text>
+        <Text allowFontScaling style={styles.title}>Our{"\n"}Menu.</Text>
 
         <View style={styles.titleMeta}>
           <Text allowFontScaling style={styles.kicker}>WHISKED · PULLED · BAKED</Text>
