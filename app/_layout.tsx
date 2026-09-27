@@ -1,10 +1,22 @@
-import { Stack } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppStateProvider } from "@/state/AppState";
 import { colors } from "@/theme";
+import { configureNotifications } from "@/notifications/client";
 
 export default function RootLayout() {
+  useEffect(() => {
+    configureNotifications().catch(() => {});
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const route = response.notification.request.content.data?.route;
+      if (typeof route === "string") router.push(route as never);
+    });
+    return () => sub.remove();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AppStateProvider>

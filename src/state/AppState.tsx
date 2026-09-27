@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { CartLine, LocationId } from "@/types/commerce";
 
-type NotificationPrefs = {
+export type NotificationPrefs = {
   events: boolean;
   seasonal: boolean;
   rewards: boolean;

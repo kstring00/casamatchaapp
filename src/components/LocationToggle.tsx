@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useAppState } from "@/state/AppState";
 import { colors, fonts, radius, spacing } from "@/theme";
 import type { LocationId } from "@/types/commerce";
+import { maybePromptNotifications } from "@/notifications/client";
 
 const options: { id: LocationId; label: string }[] = [
   { id: "friendswood", label: "Friendswood" },
@@ -9,7 +10,13 @@ const options: { id: LocationId; label: string }[] = [
 ];
 
 export function LocationToggle() {
-  const { locationId, setLocationId } = useAppState();
+  const { locationId, setLocationId, notificationPrefs } = useAppState();
+
+  const choose = (id: LocationId) => {
+    setLocationId(id);
+    maybePromptNotifications(id, notificationPrefs, "location").catch(() => {});
+  };
+
   return (
     <View accessibilityRole="radiogroup" style={styles.wrap}>
       {options.map((option) => {
@@ -19,8 +26,8 @@ export function LocationToggle() {
             key={option.id}
             accessibilityRole="radio"
             accessibilityState={{ checked: active }}
-            accessibilityLabel={`Use ${option.label} location`}
-            onPress={() => setLocationId(option.id)}
+            accessibilityLabel={"Use " + option.label + " location"}
+            onPress={() => choose(option.id)}
             style={({ pressed }) => [
               styles.option,
               active && styles.active,
