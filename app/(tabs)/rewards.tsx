@@ -66,8 +66,7 @@ export default function RewardsScreen() {
             {locationId === "friendswood" ? "FRIENDSWOOD" : "WEBSTER"}
           </Text>
         </View>
-        <Text allowFontScaling style={styles.title}>Rewards,{"
-"}but make it <Text style={styles.titleItalic}>familia.</Text></Text>
+        <Text allowFontScaling style={styles.title}>Rewards,{"\n"}but make it <Text style={styles.titleItalic}>familia.</Text></Text>
       </View>
 
       <View style={styles.passport}>
