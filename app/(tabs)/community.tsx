@@ -85,7 +85,7 @@ function LocationsSection({ locations }: { locations: CafeLocation[] }) {
   return (
     <View style={styles.sectionStack}>
       <View style={styles.mapFrame}>
-        <MapView style={StyleSheet.absoluteFillObject} initialRegion={center} accessibilityLabel="Map showing Casa Matcha Friendswood and Webster">
+        <MapView style={StyleSheet.absoluteFill} initialRegion={center} accessibilityLabel="Map showing Casa Matcha Friendswood and Webster">
           {locations.map((location) => (
             <Marker key={location.id} coordinate={{ latitude: location.latitude, longitude: location.longitude }} title={"Casa Matcha " + location.name} description={location.address1} pinColor={colors.forest} />
           ))}
@@ -147,7 +147,7 @@ function EventsSection({ event }: { event: EventContent }) {
   return (
     <View style={styles.sectionStack}>
       <View style={styles.eventCard}>
-        <Image source={{ uri: event.image }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel="Casa Matcha event" />
+        <Image source={{ uri: event.image }} style={StyleSheet.absoluteFill} contentFit="cover" accessibilityLabel="Casa Matcha event" />
         <View style={styles.eventShade} />
         <View style={styles.eventCopy}>
           <Text allowFontScaling style={styles.eventEyebrow}>FEATURED EVENT</Text>
@@ -187,7 +187,7 @@ function StorySection() {
   return (
     <View style={styles.sectionStack}>
       <View style={styles.storyHero}>
-        <Image source={{ uri: story.ownerImage }} style={StyleSheet.absoluteFillObject} contentFit="cover" accessibilityLabel="Casa Matcha owner" />
+        <Image source={{ uri: story.ownerImage }} style={StyleSheet.absoluteFill} contentFit="cover" accessibilityLabel="Casa Matcha owner" />
         <View style={styles.storyLabel}><Text allowFontScaling style={styles.storyLabelText}>MORE THAN DRINKS</Text></View>
       </View>
       <View style={styles.storyCopy}>
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   primarySmall: { flex: 1, backgroundColor: colors.forest, borderColor: colors.forest },
   smallActionText: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.forest },
   eventCard: { minHeight: 340, borderRadius: radius.lg, overflow: "hidden", backgroundColor: colors.ink, ...shadow.card },
-  eventShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(12,18,14,0.48)" },
+  eventShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(12,18,14,0.48)" },
   eventCopy: { flex: 1, minHeight: 340, padding: spacing.lg, justifyContent: "flex-end", gap: 9 },
   eventEyebrow: { ...type.label, color: colors.goldLight },
   eventTitle: { ...type.displayL, color: colors.cream, maxWidth: 300 },
